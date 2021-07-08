@@ -1,9 +1,10 @@
-import random
 import datetime
+import random
 
-from django.utils import timezone
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
+
 from orders.models import Order, OrderItem
 
 
@@ -19,16 +20,17 @@ class Command(BaseCommand):
         if num_orders <= 0:
             raise CommandError("The value of argument 'number of orders' must be a positive number")
         tz = timezone.get_current_timezone()
-        start_datetime = datetime.datetime.strptime(settings.START_DATETIME, "%m.%d.%Y %H:%M")
-        last_id = Order.objects.last().pk
+        start_datetime = datetime.datetime.strptime(settings.START_DATETIME, "%d.%m.%Y %H:%M")
+        last_id = Order.objects.last().id if Order.objects.last() else 0
         new_ids = list(range(last_id + 1, last_id + num_orders + 1))
 
         orders = [
             Order(
-                number=el,
-                created_date=str(tz.localize(start_datetime + datetime.timedelta(hours=el)))
+                id=i,
+                number=num,
+                created_date=str(tz.localize(start_datetime + datetime.timedelta(hours=num)))
             )
-            for el in range(num_orders)
+            for num, i in enumerate(new_ids)
         ]
         order_items = [
             OrderItem(

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Отчёт по самым покупаемым товарам{% endblock %}
+{% block select %}
+    <div class='input-group mb-3'>
+        <span class="input-group-text">Количество товаров на странице:</span>
+        <select class="form-select" id="max_items_number">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+    </div>
+{% endblock %}
+{% block content %}
+    <thead style="position: sticky;top: 0" class="table-dark">
+    <tr>
+        <th scope="col" rowspan="2">#</th>
+        <th scope="col" rowspan="2">Имя товара</th>
+        <th scope="col" colspan="3">Данные</th>
+    </tr>
+    <tr>
+        <th scope="col">Номер заказа</th>
+        <th scope="col">Цена</th>
+        <th scope="col">Дата</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in order_items %}
+        <tr>
+            <th rowspan="{{ item.len }}" scope="row">{{ forloop.counter }}</th>
+            <td rowspan="{{ item.len }}" data-amount="{{ item.amount }}">{{ item.name }} </td>
+        </tr>
+        {% for order in item.details %}
+            <tr>
+                <td>{{ order.order_number }}</td>
+                <td>{{ order.product_price }}</td>
+                <td>{{ order.order_created_date | date:"d.m.Y H:i" }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    {% empty %}
+        <tr>
+            <td colspan="5">
+                <div class="alert alert-warning d-flex align-items-center" role="alert">
+                    <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:">
+                        <use xlink:href="#exclamation-triangle-fill"/>
+                    </svg>
+                    <div>
+                        По указанному условию поиска заказы отсутствуют
+                    </div>
+                </div>
+            </td>
+        </tr>
+    {% endfor %}
+
+{% endblock %}
+{% block javascript %}
+    <script>
+        sendRequestByClick("#sendRequest", "#orders", "orderItems");
+    </script>
+{% endblock %}
