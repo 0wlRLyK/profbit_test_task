@@ -1,18 +1,9 @@
-{% load functions %}
+{% load functions static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %}</title>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.0/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment-with-locales.min.js"
-            integrity="sha512-LGXaggshOkD/at6PFNcp2V2unf9LzFq6LE+sChH7ceMTDP0g2kn6Vxwgg7wkPP7AAtX+lmPqPdxB47A0Nz0cMQ=="
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"
-            integrity="sha512-k6/Bkb8Fxf/c1Tkyl39yJwcOZ1P4cRrJu77p83zJjN2Z55prbFHxPs9vN7q3l3+tSMGPDdoH51AEU8Vgo1cgAA=="
-            crossorigin="anonymous"></script>
-
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/css/tempusdominus-bootstrap-4.min.css"
           integrity="sha512-3JRrEUwaCkFUBLK1N8HehwQgu8e23jTH4np5NHOmQOobuC4ROQxFwFgBLTnhcnQRMs84muMh0PnnwXlPq5MGjg=="
@@ -24,12 +15,6 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/eonasdan-bootstrap-datetimepicker/4.17.49/css/bootstrap-datetimepicker.min.css"
           integrity="sha512-ipfmbgqfdejR27dWn02UftaAzUfxJ3HR4BDQYuITYSj6ZQfGT1NulP4BOery3w/dT2PYAe3bG5Zm/owm7MuFhA=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
-    <style>
-        .header {
-            position: sticky;
-            top: 0;
-        }
-    </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -65,117 +50,24 @@
             Всего было выполнено <strong id="top_query_counter">n</strong> запросов к базе данных.
         </div>
     </div>
-
-    <div class='input-group mb-3'>
-        <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
-            <span class="input-group-text">Начальные дата и время:</span>
-            <input class="form-control" type="text" name="picker_from" class="form-control datetimepicker-input"
-                   data-target="#datetimepicker1"/>
-            <button type="button" class="btn btn-outline-secondary" data-target="#datetimepicker1"
-                    data-toggle="datetimepicker">
-                <i class="fa fa-calendar"></i>
-            </button>
-        </div>
-    </div>
-    <div class='input-group mb-3'>
-
-        <div class="input-group date" id="datetimepicker2" data-target-input="nearest">
-            <span class="input-group-text">Конечные дата и время:</span>
-            <input type="text" name="picker_to" class="form-control datetimepicker-input"
-                   data-target="#datetimepicker2"/>
-            <button type="button" class="btn btn-outline-secondary" data-target="#datetimepicker2"
-                    data-toggle="datetimepicker">
-                <i class="fa fa-calendar"></i>
-            </button>
-        </div>
-    </div>
-    {% block select %}
+    {% block forms %}
 
     {% endblock %}
-    <div class="input-group mb-3">
-        <button id="sendRequest" type="submit" class="btn btn-primary">Сгенерировать отчет</button>
-    </div>
+
 </div>
 <table id="orders" class="table table-bordered table-hover ">
     {% block content %}{% endblock %}
 </table>
 
 <span id="real_query_counter" data-counter="{% db_queries_counter %}"></span>
-<script>
-    $("#top_query_counter").text($("#real_query_counter").data("counter"));
-    $.fn.datetimepicker.Constructor.Default = $.extend({}, $.fn.datetimepicker.Constructor.Default, {
-        icons: {
-            time: 'far fa-clock',
-            date: 'far fa-calendar',
-            up: 'fas fa-arrow-up',
-            down: 'fas fa-arrow-down',
-            previous: 'fas fa-chevron-left',
-            next: 'fas fa-chevron-right',
-            today: 'far fa-calendar-check-o',
-            clear: 'far fa-trash',
-            close: 'far fa-times'
-        }
-    });
-    const pickerConfigs = {
-        format: 'DD.MM.YYYY HH:mm',
-        locale: 'uk',
-
-    };
-    let fromDate = null,
-        toDate;
-    $(function () {
-        $('#datetimepicker1').datetimepicker(Object.assign({
-            defaultDate: moment({
-                day: 1,
-                month: 0,
-                year: 2018,
-                hour: 9
-            }),
-        }, pickerConfigs));
-        $('#datetimepicker2').datetimepicker(Object.assign({
-            useCurrent: false,
-            defaultDate: moment({
-                day: 1,
-                month: 0,
-                year: 2018,
-                hour: 10
-            }),
-        }, pickerConfigs));
-        $("#datetimepicker1").on("change.datetimepicker", function (e) {
-            $('#datetimepicker2').datetimepicker('minDate', e.date);
-        });
-        $("#datetimepicker2").on("change.datetimepicker", function (e) {
-            $('#datetimepicker1').datetimepicker('maxDate', e.date);
-        });
-    });
-
-    function sendRequestByClick(buttonSelector, loadTo, type) {
-        $(buttonSelector).on('click', function () {
-            let fromDate = $('#datetimepicker1').datetimepicker('date').format('DD.MM.YYYY HH:mm'),
-                toDate = $('#datetimepicker2').datetimepicker('date').format('DD.MM.YYYY HH:mm'),
-                maxItems = $("#max_items_number").val(),
-                params = null;
-            if (type === "orders") {
-                params = `?from=${fromDate}&to=${toDate}`
-            } else if (type === "orderItems") {
-                params = `?from=${fromDate}&to=${toDate}&slice=${maxItems}`
-            }
-
-            $.ajax({
-                url: location.origin + location.pathname + params,
-                type: "GET",
-                success: function (data) {
-                    let orders = $(data).filter(loadTo).html();
-                    $(loadTo).html(orders);
-                    window.history.pushState({"html": data.html, "pageTitle": data.pageTitle}, "", params)
-                }
-            })
-
-        })
-    }
-
-    sendRequestByClick("#sendRequest", "#orders", "orderItems");
-</script>
-{% block javascript %}{% endblock %}
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.0/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment-with-locales.min.js"
+        integrity="sha512-LGXaggshOkD/at6PFNcp2V2unf9LzFq6LE+sChH7ceMTDP0g2kn6Vxwgg7wkPP7AAtX+lmPqPdxB47A0Nz0cMQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"
+        integrity="sha512-k6/Bkb8Fxf/c1Tkyl39yJwcOZ1P4cRrJu77p83zJjN2Z55prbFHxPs9vN7q3l3+tSMGPDdoH51AEU8Vgo1cgAA=="
+        crossorigin="anonymous"></script>
+<script src="{% static "main.js" %}"></script>
 </body>
 </html>

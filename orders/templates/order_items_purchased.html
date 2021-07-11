@@ -1,16 +1,41 @@
 {% extends "base.html" %}
+{% load functions %}
 {% block title %}Отчёт по самым покупаемым товарам{% endblock %}
-{% block select %}
-    <div class='input-group mb-3'>
-        <span class="input-group-text">Количество товаров на странице:</span>
-        <select class="form-select" id="max_items_number">
-            <option value="10">10</option>
-            <option value="20" selected>20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-        </select>
-    </div>
+{% block forms %}
+    <form id="report_form" method="get">
+        {% for field in form.visible_fields %}
+            <div class='input-group mb-3'>
+                <span>{{ field.errors }}</span>
+                <div class="input-group date" id="{{ field.html_name }}" data-target-input="nearest">
+
+                    <span class="input-group-text">{{ field.label }}</span>
+                    {% if field.html_name in "from_date,to_date" %}
+                        <input type="text" name="{{ field.html_name }}" class="form-control datetimepicker-input"
+                               data-target="#{{ field.html_name }}"/>
+
+                        <button type="button" class="btn btn-outline-secondary" data-target="#{{ field.html_name }}"
+                                data-toggle="datetimepicker">
+                            <i class="fa fa-calendar"></i>
+                        </button>
+                    {% elif field.html_name == "max_items" %}
+                        <select class="form-select" name="{{ field.html_name }}">
+                            {% for choice in form.max_items.field.choices %}
+                                <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
+
+                </div>
+            </div>
+        {% endfor %}
+        <div class="input-group mb-3">
+            <button id="sendRequest" type="submit" class="btn btn-primary">Сгенерировать отчет</button>
+        </div>
+    </form>
 {% endblock %}
+
 {% block content %}
     <thead style="position: sticky;top: 0" class="table-dark">
     <tr>
@@ -25,16 +50,21 @@
     </tr>
     </thead>
     <tbody>
+
     {% for item in order_items %}
         <tr>
-            <th rowspan="{{ item.len }}" scope="row">{{ forloop.counter }}</th>
-            <td rowspan="{{ item.len }}" data-amount="{{ item.amount }}">{{ item.name }} </td>
+            <th rowspan="{{ item.length }}" scope="row">{{ forloop.counter }}</th>
+            <td rowspan="{{ item.length }}" title="{{ item.total_sold }}">{{ item.product_name }} </td>
         </tr>
-        {% for order in item.details %}
+        {% zip_orders item as orders %}
+        {% for number, price, date in orders %}
             <tr>
-                <td>{{ order.order_number }}</td>
-                <td>{{ order.product_price }}</td>
-                <td>{{ order.order_created_date | date:"d.m.Y H:i" }}</td>
+
+                <td>{{ number }}</td>
+                <td>{{ price }}</td>
+                <td>{{ date | date:"d.m.Y H:i" }}</td>
+
+
             </tr>
         {% endfor %}
         </tbody>
@@ -53,9 +83,4 @@
         </tr>
     {% endfor %}
 
-{% endblock %}
-{% block javascript %}
-    <script>
-        sendRequestByClick("#sendRequest", "#orders", "orderItems");
-    </script>
 {% endblock %}
